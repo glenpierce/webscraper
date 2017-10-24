@@ -4,13 +4,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class WebScraper {
 
-	private Logger logger = Logger.getLogger("log");
 	private ArrayList<String> output = new ArrayList<>();
 
 	public static void main(String[] args) {
@@ -19,10 +22,30 @@ public class WebScraper {
 	}
 
 	private void run() {
+
+		File file = new File("webscraperFile.txt");
+		System.out.println(file.getAbsolutePath());
+		FileOutputStream fileOutputStream;
+		try {
+			fileOutputStream = new FileOutputStream(file);
+		} catch (Exception e){
+			System.out.println("error getting FileOutputStream");
+			return;
+		}
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+		Writer writer = new BufferedWriter(outputStreamWriter);
+		try{
+			writer.write("First write\n");
+//			writer.close();
+		} catch (Exception e){
+			System.out.println("error writing to file");
+			return;
+		}
+
 		String lastAction = "";
 		WebDriver driver = new ChromeDriver();
 		output.add("\n");
-		int lineNumber = 390;
+		int lineNumber = 1170;
 		output.add("id");
 		output.add("city");
 		output.add("country");
@@ -40,7 +63,8 @@ public class WebScraper {
 		output.add("emissions reduction target, tCO₂e");
 		output.add("\n");
 
-		for (int h = 10; h < 168; h++) {
+		for (int h = 30; h < 90; h++) {
+//			for (int h = 10; h < 168; h++) {
 			String baseUrl = "http://www.covenantofmayors.eu/about/signatories_en.html?q=Search+for+a+Signatory...&country_search=&population=&date_of_adhesion=&status=&commitments1=1&commitments2=1&commitments3=1";
 			driver.navigate().to(baseUrl + "&start=" + h);
 			List<WebElement> rows = driver.findElements(By.xpath("//*[@id=\"left_content\"]/table/tbody/tr"));
@@ -119,9 +143,14 @@ public class WebScraper {
 						WebElement emissionReductionTarget = driver.findElement(By.xpath("//*[@id=\"content_iframe_graphs_edit\"]/div/div/div/div[1]/table/tbody/tr[2]/td"));
 						output.add(emissionReductionTarget.getText());
 						lastAction = "getting plan title";
-						WebElement planTitle = driver.findElement(By.xpath("//*[@id=\"content_iframe_graphs_edit\"]/div/div/div/table/tbody/tr/td[1]/a"));
-						output.add(planTitle.getText());
-						output.add(planTitle.getAttribute("href"));
+						try {
+							WebElement planTitle = driver.findElement(By.xpath("//*[@id=\"content_iframe_graphs_edit\"]/div/div/div/table/tbody/tr/td[1]/a"));
+							output.add(planTitle.getText());
+							output.add(planTitle.getAttribute("href"));
+						} catch (Exception e){
+							output.add("error getting plan title");
+							output.add("error getting plan title");
+						}
 						lastAction = "getting CO2 Tonnes";
 						WebElement co2Tonnes = driver.findElement(By.xpath("//*[@id=\"gas_emission_and_final_consumption_per_capita_list\"]/tbody/tr/td[2]"));
 						output.add(co2Tonnes.getText());
@@ -165,6 +194,25 @@ public class WebScraper {
 
 					driver.navigate().to(baseUrl + "&start=" + h);
 					output.add("\n");
+
+					StringBuilder stringBuilder = new StringBuilder();
+					for(String line : output){
+						if(!line.equals("\n")) {
+							stringBuilder.append(line + "; ");
+						}
+					}
+					System.out.println(stringBuilder.toString());
+
+					try {
+						for (String line : output) {
+							writer.write(line + (line.equals("\n") ? "" : "; "));
+						}
+					} catch (Exception e){
+						System.out.println("failed to write line");
+						return;
+					}
+					output.clear();
+
 				} catch (Exception e) {
 //					e.printStackTrace();
 					System.out.println("error on line " + lineNumber + " " + lastAction);
@@ -175,11 +223,16 @@ public class WebScraper {
 				}
 			}
 		}
-
-		StringBuilder stringBuilder = new StringBuilder();
-		for (String line : output) {
-			stringBuilder.append(line).append(line.equals("\n") ? "" : "; ");
+		try {
+			writer.close();
+		} catch (Exception e){
+			System.out.println("failed to close writer");
 		}
-		logger.info(stringBuilder.toString());
+
+//		StringBuilder stringBuilder = new StringBuilder();
+//		for (String line : output) {
+//			stringBuilder.append(line).append(line.equals("\n") ? "" : "; ");
+//		}
+//		logger.info(stringBuilder.toString());
 	}
 }
