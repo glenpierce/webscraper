@@ -3,6 +3,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,7 +19,26 @@ public class WebScraper {
 
 	public static void main(String[] args) {
 		WebScraper newInstance = new WebScraper();
-		newInstance.run();
+//		newInstance.run();
+		newInstance.getCitiesCount();
+	}
+
+	private void getCitiesCount(){
+
+		WebDriver driver = new ChromeDriver();
+		//*[@id="left_content"]/h3
+		String baseUrl = "http://www.covenantofmayors.eu/about/signatories_en.html?q=Search+for+a+Signatory...&country_search=&population=&date_of_adhesion=&status=&commitments1=1&commitments2=1&commitments3=1";
+		driver.navigate().to(baseUrl);
+
+		for(int i = 0; i < 52; i++){
+			WebElement mySelectElement = driver.findElement(By.xpath("//*[@id='form_search_list']/select[1]"));
+			Select dropdown= new Select(mySelectElement);
+			String countryName = dropdown.getOptions().get(i).getText();
+			dropdown.selectByIndex(i);
+			WebElement country = driver.findElement(By.xpath("//*[@id='left_content']/h3"));
+
+			System.out.println(countryName + " " + country.getText());
+		}
 	}
 
 	private void run() {
