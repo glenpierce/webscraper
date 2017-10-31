@@ -20,13 +20,36 @@ public class WebScraper {
 	public static void main(String[] args) {
 		WebScraper newInstance = new WebScraper();
 //		newInstance.run();
-		newInstance.getCitiesCount();
+//		newInstance.getCitiesCount();
+		newInstance.getPopulation();
+	}
+
+	private void getPopulation(){
+//		WebDriver driver = new ChromeDriver();
+		String cities = "City of Gaziantep, Turkey\n" +
+				"Istanbul Metropolitan Municipality, Turkey\n" +
+				"Izmir Metropolitan Municipality, Turkey\n" +
+				"Kadiköy Municipality, Turkey\n" +
+				"Nevsehir Municipality, Turkey\n" +
+				"Yalova Municipality, Turkey\n";
+		ArrayList<String> citiesList = new ArrayList<>();
+		for(int i = 0; i < cities.length(); i++){
+			try {
+				citiesList.add(cities.substring(i, cities.indexOf('\n', i)));
+				i = cities.indexOf('\n', i);
+				System.out.println(i);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		for(String city : citiesList){
+			System.out.println(city);
+		}
 	}
 
 	private void getCitiesCount(){
 
 		WebDriver driver = new ChromeDriver();
-		//*[@id="left_content"]/h3
 		String baseUrl = "http://www.covenantofmayors.eu/about/signatories_en.html?q=Search+for+a+Signatory...&country_search=&population=&date_of_adhesion=&status=&commitments1=1&commitments2=1&commitments3=1";
 		driver.navigate().to(baseUrl);
 
